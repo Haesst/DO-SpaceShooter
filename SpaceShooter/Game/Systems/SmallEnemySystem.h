@@ -9,12 +9,12 @@
 
 struct SmallEnemySystem : ECS::System
 {
-	ECS::EntityManager* entityManager;
+	ECS::EntityManager* m_EntityManager;
 
 	SmallEnemySystem()
 	{
 		AddComponentSignature<SmallEnemy>();
-		entityManager = &ECS::EntityManager::Get();
+		m_EntityManager = &ECS::EntityManager::Get();
 	}
 
 	virtual void Update(GameState currentState) override
@@ -23,44 +23,44 @@ struct SmallEnemySystem : ECS::System
 		int currentWindowWidth;
 		int currentWindowHeight;
 
-		SDL_GetWindowSize(currentState.window, &currentWindowWidth, &currentWindowHeight);
+		SDL_GetWindowSize(currentState.m_Window, &currentWindowWidth, &currentWindowHeight);
 
-		for (auto entity : entities)
+		for (auto entity : m_Entities)
 		{
-			ECS::Transform* transform = &entityManager->GetComponent<ECS::Transform>(entity);
-			ECS::SpriteRenderer* spriteRenderer = &entityManager->GetComponent<ECS::SpriteRenderer>(entity);
-			SmallEnemy* enemy = &entityManager->GetComponent<SmallEnemy>(entity);
+			ECS::Transform* transform = &m_EntityManager->GetComponent<ECS::Transform>(entity);
+			ECS::SpriteRenderer* spriteRenderer = &m_EntityManager->GetComponent<ECS::SpriteRenderer>(entity);
+			SmallEnemy* enemy = &m_EntityManager->GetComponent<SmallEnemy>(entity);
 
-			int maximumWidth = currentWindowWidth - spriteRenderer->width;
+			int maximumWidth = currentWindowWidth - spriteRenderer->m_Width;
 
 			MoveEnemy(enemy, transform, minimumX, maximumWidth);
 
-			enemy->timeSinceLastShot -= currentState.deltaTime;
+			enemy->m_TimeSinceLastShot -= currentState.m_DeltaTime;
 
-			if (enemy->timeSinceLastShot <= 0.0f)
+			if (enemy->m_TimeSinceLastShot <= 0.0f)
 			{
-				FireBullet(enemy, currentState.deltaTime);
-				enemy->timeSinceLastShot = enemy->shotTimer;
+				FireBullet(enemy, currentState.m_DeltaTime);
+				enemy->m_TimeSinceLastShot = enemy->m_ShotTimer;
 			}
 		}
 	}
 
 	void MoveEnemy(SmallEnemy* enemy, ECS::Transform* enemyTransform, int minimumX, int maximumX)
 	{
-		enemyTransform->Translate(enemy->currentDirection * enemy->speed);
+		enemyTransform->Translate(enemy->m_CurrentDirection * enemy->m_Speed);
 
-		if (enemy->currentDirection.x < 0)
+		if (enemy->m_CurrentDirection.x < 0)
 		{
-			if (enemyTransform->Position.x < minimumX)
+			if (enemyTransform->m_Position.x < minimumX)
 			{
-				enemy->currentDirection = { 1, enemy->currentDirection.y };
+				enemy->m_CurrentDirection = { 1, enemy->m_CurrentDirection.y };
 			}
 		}
 		else
 		{
-			if (enemyTransform->Position.x > maximumX)
+			if (enemyTransform->m_Position.x > maximumX)
 			{
-				enemy->currentDirection = { -1, enemy->currentDirection.y };
+				enemy->m_CurrentDirection = { -1, enemy->m_CurrentDirection.y };
 			}
 		}
 	}
@@ -68,32 +68,32 @@ struct SmallEnemySystem : ECS::System
 	void FireBullet(SmallEnemy* enemy, float deltaTime)
 	{
 
-		enemy->timeSinceLastShot -= deltaTime;
+		enemy->m_TimeSinceLastShot -= deltaTime;
 
-		if (enemy->timeSinceLastShot <= 0.0f)
+		if (enemy->m_TimeSinceLastShot <= 0.0f)
 		{
-			ECS::EntityID bullet = enemy->bulletPool->Rent(false);
-			Vector2D enemyPosition = entityManager->GetComponent<ECS::Transform>(enemy->GetID()).Position;
+			ECS::EntityID bullet = enemy->m_BulletPool->Rent(false);
+			Vector2D enemyPosition = m_EntityManager->GetComponent<ECS::Transform>(enemy->GetID()).m_Position;
 
-			ECS::SpriteRenderer* spriteRenderer = &entityManager->GetComponent<ECS::SpriteRenderer>(bullet);
-			ECS::Transform* bulletTransform = &entityManager->GetComponent<ECS::Transform>(bullet);
+			ECS::SpriteRenderer* spriteRenderer = &m_EntityManager->GetComponent<ECS::SpriteRenderer>(bullet);
+			ECS::Transform* bulletTransform = &m_EntityManager->GetComponent<ECS::Transform>(bullet);
 
-			bulletTransform->Position = enemyPosition + enemy->bulletOffset;
-			entityManager->GetComponent<Bullet>(bullet).speed = enemy->bulletSpeed;
+			bulletTransform->m_Position = enemyPosition + enemy->m_BulletOffset;
+			m_EntityManager->GetComponent<Bullet>(bullet).m_Speed = enemy->m_BulletSpeed;
 			
 			UpdateBulletSpriteDestRect(spriteRenderer, bulletTransform);
 			
-			entityManager->SetEntityActive(bullet, true);
+			m_EntityManager->SetEntityActive(bullet, true);
 
-			enemy->timeSinceLastShot = enemy->shotTimer;
+			enemy->m_TimeSinceLastShot = enemy->m_ShotTimer;
 		}
 	}
 
 	void UpdateBulletSpriteDestRect(ECS::SpriteRenderer* spriteRenderer, ECS::Transform* bulletTransform)
 	{
-		spriteRenderer->destRect.x = static_cast<int>(bulletTransform->Position.x);
-		spriteRenderer->destRect.y = static_cast<int>(bulletTransform->Position.y);
-		spriteRenderer->destRect.w = static_cast<int>(spriteRenderer->width * bulletTransform->Scale.x);
-		spriteRenderer->destRect.h = static_cast<int>(spriteRenderer->height * bulletTransform->Scale.y);
+		spriteRenderer->m_DestRect.x = static_cast<int>(bulletTransform->m_Position.x);
+		spriteRenderer->m_DestRect.y = static_cast<int>(bulletTransform->m_Position.y);
+		spriteRenderer->m_DestRect.w = static_cast<int>(spriteRenderer->m_Width * bulletTransform->m_Scale.x);
+		spriteRenderer->m_DestRect.h = static_cast<int>(spriteRenderer->m_Height * bulletTransform->m_Scale.y);
 	}
 };

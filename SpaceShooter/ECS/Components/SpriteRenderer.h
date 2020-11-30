@@ -12,31 +12,31 @@ namespace ECS
 {
 	struct SpriteRenderer : public Component
 	{
-		int width;
-		int height;
-		SDL_Rect sourceRect = { 0,0,0,0 };
-		SDL_Rect destRect = { 0,0,0,0 };
+		int m_Width;
+		int m_Height;
+		SDL_Rect m_SourceRect = { 0,0,0,0 };
+		SDL_Rect m_DestRect = { 0,0,0,0 };
 
-		std::string textureID = "";
-		SDL_Texture* texture;
-		SDL_Renderer* targetRenderer;
+		std::string m_TextureID = "";
+		SDL_Texture* m_Texture;
+		SDL_Renderer* m_TargetRenderer;
 
 		SpriteRenderer(SDL_Renderer* target, SDL_Texture* texture)
-			: targetRenderer(target), texture(texture)
+			: m_TargetRenderer(target), m_Texture(texture)
 		{
-			SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
+			SDL_QueryTexture(texture, nullptr, nullptr, &m_Width, &m_Height);
 
-			Transform transform = EntityManager::Get().GetComponent<Transform>(entityID);
+			Transform transform = EntityManager::Get().GetComponent<Transform>(m_EntityID);
 
-			destRect.x = transform.Position.x;
-			destRect.y = transform.Position.y;
-			destRect.w = width * transform.Scale.x;
-			destRect.h = height * transform.Scale.y;
+			m_DestRect.x = transform.m_Position.x;
+			m_DestRect.y = transform.m_Position.y;
+			m_DestRect.w = m_Width * transform.m_Scale.x;
+			m_DestRect.h = m_Height * transform.m_Scale.y;
 
-			sourceRect.x = 0;
-			sourceRect.y = 0;
-			sourceRect.w = width;
-			sourceRect.h = height;
+			m_SourceRect.x = 0;
+			m_SourceRect.y = 0;
+			m_SourceRect.w = m_Width;
+			m_SourceRect.h = m_Height;
 		}
 
 		~SpriteRenderer() = default;

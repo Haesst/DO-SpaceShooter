@@ -22,7 +22,7 @@ public:
 	void LoadFont(std::string id, std::string path, int fontSize);
 
 private:
-	std::map<std::string, TTF_Font*> fonts;
-	std::map<std::string, SDL_Texture*> textures;
-	Engine* engine;
+	std::map<std::string, TTF_Font*> m_Fonts;
+	std::map<std::string, SDL_Texture*> m_Textures;
+	Engine* m_Engine;
 };

@@ -5,8 +5,8 @@
 class InputManager
 {
 private:
-	Uint8* keys = nullptr;
-	Uint8* lastKeys = nullptr;
+	Uint8* m_Keys = nullptr;
+	Uint8* m_LastKeys = nullptr;
 
 public:
 	void Init();

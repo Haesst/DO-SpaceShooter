@@ -4,14 +4,14 @@
 
 namespace ECS
 {
-	struct Entity // Todo: Add something about this to document -> Wrapper class
+	struct Entity
 	{
 	private:
 		EntityID id;
-		EntityManager* manager;
+		EntityManager* m_EntityManager;
 
 	public:
-		Entity(const EntityID id, EntityManager* manager) : id(id), manager(manager) {}
+		Entity(const EntityID id, EntityManager* manager) : id(id), m_EntityManager(manager) {}
 		~Entity() = default;
 
 		const EntityID GetID() const
@@ -22,36 +22,36 @@ namespace ECS
 		template<typename T, typename... Args>
 		void AddComponent(Args&&... args)
 		{
-			manager->AddComponent<T>(id, std::forward<Args>(args)...);
+			m_EntityManager->AddComponent<T>(id, std::forward<Args>(args)...);
 		}
 
 		template<typename T>
 		void AddComponent(T& component)
 		{
-			manager->AddComponent(id, component);
+			m_EntityManager->AddComponent(id, component);
 		}
 
 		template<typename T>
 		inline T& GetComponent()
 		{
-			return manager->GetComponent<T>(id);
+			return m_EntityManager->GetComponent<T>(id);
 		}
 
 		template<typename T>
 		inline void RemoveComponent()
 		{
-			manager->RemoveComponent<T>(id);
+			m_EntityManager->RemoveComponent<T>(id);
 		}
 
 		template<typename T>
 		inline bool HasComponent()
 		{
-			return manager->HasComponent<T>(id);
+			return m_EntityManager->HasComponent<T>(id);
 		}
 
 		void Destroy()
 		{
-			manager->DestroyEntity(id);
+			m_EntityManager->DestroyEntity(id);
 		}
 	};
 }

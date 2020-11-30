@@ -6,87 +6,87 @@
 
 struct SmallEnemyWaveSystem : ECS::System
 {
-	ECS::EntityManager* entityManager;
+	ECS::EntityManager* m_EntityManager;
 
 	SmallEnemyWaveSystem()
 	{
 		AddComponentSignature<SmallEnemyWave>();
-		entityManager = &ECS::EntityManager::Get();
+		m_EntityManager = &ECS::EntityManager::Get();
 	}
 
 	virtual void Update(GameState currentState) override
 	{
-		for (auto entity : entities)
+		for (auto entity : m_Entities)
 		{
-			SmallEnemyWave* enemyWave = &entityManager->GetComponent<SmallEnemyWave>(entity);
+			SmallEnemyWave* enemyWave = &m_EntityManager->GetComponent<SmallEnemyWave>(entity);
 
-			for (auto waveEntity : enemyWave->currentWave)
+			for (auto waveEntity : enemyWave->m_CurrentWave)
 			{
-				if (!entityManager->IsEntityActive(waveEntity))
+				if (!m_EntityManager->IsEntityActive(waveEntity))
 				{
-					enemyWave->currentWave.erase(
+					enemyWave->m_CurrentWave.erase(
 						std::remove(
-							enemyWave->currentWave.begin(), 
-							enemyWave->currentWave.end(), 
+							enemyWave->m_CurrentWave.begin(), 
+							enemyWave->m_CurrentWave.end(), 
 							waveEntity
 						), 
-						enemyWave->currentWave.end()
+						enemyWave->m_CurrentWave.end()
 					);
 				}
 			}
 
-			if (enemyWave->spawningWave)
+			if (enemyWave->m_SpawningWave)
 			{
-				SpawnNewWave(enemyWave, currentState.deltaTime);
+				SpawnNewWave(enemyWave, currentState.m_DeltaTime);
 				return;
 			}
 
-			if (enemyWave->currentWave.size() > 0)
+			if (enemyWave->m_CurrentWave.size() > 0)
 			{
 				return;
 			}
 
-			if (enemyWave->waves.size() > 0)
+			if (enemyWave->m_Waves.size() > 0)
 			{
-				enemyWave->spawningWave = true;
+				enemyWave->m_SpawningWave = true;
 			}
 		}
 	}
 
 	void SpawnNewWave(SmallEnemyWave* enemyWave, float deltaTime)
 	{
-		if (enemyWave->currentTimeBetweenWaves > 0.0f)
+		if (enemyWave->m_CurrentTimeBetweenWaves > 0.0f)
 		{
-			enemyWave->currentTimeBetweenWaves -= deltaTime;
+			enemyWave->m_CurrentTimeBetweenWaves -= deltaTime;
 		}
 		else
 		{
-			if (enemyWave->currentTimeBetweenSpawn > 0.0f)
+			if (enemyWave->m_CurrentTimeBetweenSpawn > 0.0f)
 			{
-				enemyWave->currentTimeBetweenSpawn -= deltaTime;
+				enemyWave->m_CurrentTimeBetweenSpawn -= deltaTime;
 			}
 			else
 			{
-				auto entity = enemyWave->smallEnemyPool->Rent(false);
-				enemyWave->currentWave.push_back(entity);
-				enemyWave->spawnedThisWave++;
+				auto entity = enemyWave->m_SmallEnemyPool->Rent(false);
+				enemyWave->m_CurrentWave.push_back(entity);
+				enemyWave->m_SpawnedThisWave++;
 
-				ECS::Transform* enemyTransform = &entityManager->GetComponent<ECS::Transform>(entity);
-				ECS::SpriteRenderer* enemyRenderer = &entityManager->GetComponent<ECS::SpriteRenderer>(entity);
-				enemyTransform->Position = { 0.0f, 0.0f };
+				ECS::Transform* enemyTransform = &m_EntityManager->GetComponent<ECS::Transform>(entity);
+				ECS::SpriteRenderer* enemyRenderer = &m_EntityManager->GetComponent<ECS::SpriteRenderer>(entity);
+				enemyTransform->m_Position = { 0.0f, 0.0f };
 				UpdateEnemySpriteDestRect(enemyRenderer, enemyTransform);
-				entityManager->SetEntityActive(entity, true);
+				m_EntityManager->SetEntityActive(entity, true);
 
-				enemyWave->currentTimeBetweenSpawn = enemyWave->timeBetweenSpawns;
+				enemyWave->m_CurrentTimeBetweenSpawn = enemyWave->m_TimeBetweenSpawns;
 
-				if (enemyWave->spawnedThisWave == enemyWave->waves.front())
+				if (enemyWave->m_SpawnedThisWave == enemyWave->m_Waves.front())
 				{
-					enemyWave->waves.pop();
+					enemyWave->m_Waves.pop();
 
-					enemyWave->currentTimeBetweenWaves = enemyWave->timeBetweenWaves;
-					enemyWave->currentTimeBetweenSpawn = 0.0f;
-					enemyWave->spawnedThisWave = 0;
-					enemyWave->spawningWave = false;
+					enemyWave->m_CurrentTimeBetweenWaves = enemyWave->m_TimeBetweenWaves;
+					enemyWave->m_CurrentTimeBetweenSpawn = 0.0f;
+					enemyWave->m_SpawnedThisWave = 0;
+					enemyWave->m_SpawningWave = false;
 				}
 			}
 		}
@@ -94,9 +94,9 @@ struct SmallEnemyWaveSystem : ECS::System
 
 	void UpdateEnemySpriteDestRect(ECS::SpriteRenderer* spriteRenderer, ECS::Transform* bulletTransform)
 	{
-		spriteRenderer->destRect.x = static_cast<int>(bulletTransform->Position.x);
-		spriteRenderer->destRect.y = static_cast<int>(bulletTransform->Position.y);
-		spriteRenderer->destRect.w = static_cast<int>(spriteRenderer->width * bulletTransform->Scale.x);
-		spriteRenderer->destRect.h = static_cast<int>(spriteRenderer->height * bulletTransform->Scale.y);
+		spriteRenderer->m_DestRect.x = static_cast<int>(bulletTransform->m_Position.x);
+		spriteRenderer->m_DestRect.y = static_cast<int>(bulletTransform->m_Position.y);
+		spriteRenderer->m_DestRect.w = static_cast<int>(spriteRenderer->m_Width * bulletTransform->m_Scale.x);
+		spriteRenderer->m_DestRect.h = static_cast<int>(spriteRenderer->m_Height * bulletTransform->m_Scale.y);
 	}
 };

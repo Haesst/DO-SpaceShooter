@@ -10,8 +10,8 @@ namespace ECS
 	{
 	protected:
 		friend class EntityManager;
-		EntitySignature signature;
-		std::set<EntityID> entities;
+		EntitySignature m_Signature;
+		std::set<EntityID> m_Entities;
 
 	public:
 		System() = default;
@@ -19,28 +19,28 @@ namespace ECS
 
 		void RemoveEntity(const EntityID entity)
 		{
-			entities.erase(entity);
+			m_Entities.erase(entity);
 		}
 
 		void AddEntity(const EntityID entity)
 		{
-			entities.insert(entity);
+			m_Entities.insert(entity);
 		}
 
 		const EntitySignature GetSignature() const
 		{
-			return signature;
+			return m_Signature;
 		}
 
 		template<typename T>
 		void AddComponentSignature()
 		{
-			signature.insert(ComponentType<T>());
+			m_Signature.insert(ComponentType<T>());
 		}
 
 		const std::set<EntityID> GetEntities()
 		{
-			return entities;
+			return m_Entities;
 		}
 
 		virtual void Start() {}

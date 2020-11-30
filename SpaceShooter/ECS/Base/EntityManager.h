@@ -10,8 +10,7 @@
 #include "Component.h"
 #include "ComponentList.h"
 #include "../Components/Transform.h"
-// Todo: Add this to document -> think about other ways to keep ECS separated from engine
-#include "../Engine/GameState.h"
+#include "../../Engine/GameState.h"
 
 namespace ECS
 {
@@ -27,15 +26,15 @@ namespace ECS
 	class EntityManager
 	{
 	private:
-		EntityID entityCount;
-		std::queue<EntityID> availableEntityIDs;
-		std::map<EntityID, std::shared_ptr<EntitySignature>> entitySignatures;
-		std::map<SystemTypeID, std::shared_ptr<System>> registeredSystems;
-		std::map<ComponentTypeID, std::shared_ptr<IComponentList>> componentArrays;
-		std::map<EntityID, bool> activeEntities;
-		std::map<EntityID, EntityTag> entityTags;
+		EntityID m_EntityCount;
+		std::queue<EntityID> m_AvailableEntityIDs;
+		std::map<EntityID, std::shared_ptr<EntitySignature>> m_EntitySignatures;
+		std::map<SystemTypeID, std::shared_ptr<System>> m_RegisteredSystems;
+		std::map<ComponentTypeID, std::shared_ptr<IComponentList>> m_ComponentArrays;
+		std::map<EntityID, bool> m_ActiveEntities;
+		std::map<EntityID, EntityTag> m_EntityTags;
 
-		static EntityManager* instance;
+		static EntityManager* m_Instance;
 
 	private:
 
@@ -44,25 +43,25 @@ namespace ECS
 		{
 			const ComponentTypeID componentType = ComponentType<T>();
 
-			assert(componentArrays.find(componentType) == componentArrays.end() && "Component list already registered!");
-			componentArrays[componentType] = std::move(std::make_shared<ComponentList<T>>());
+			assert(m_ComponentArrays.find(componentType) == m_ComponentArrays.end() && "Component list already registered!");
+			m_ComponentArrays[componentType] = std::move(std::make_shared<ComponentList<T>>());
 		}
 
 		void AddEntitySignature(const EntityID entity)
 		{
-			assert(entitySignatures.find(entity) == entitySignatures.end() && "Signature not found");
-			entitySignatures[entity] = std::move(std::make_shared<EntitySignature>());
+			assert(m_EntitySignatures.find(entity) == m_EntitySignatures.end() && "Signature not found");
+			m_EntitySignatures[entity] = std::move(std::make_shared<EntitySignature>());
 		}
 
 		std::shared_ptr<EntitySignature> GetEntitySignature(const EntityID entity)
 		{
-			assert(entitySignatures.find(entity) != entitySignatures.end() && "Signature not found");
-			return entitySignatures.at(entity);
+			assert(m_EntitySignatures.find(entity) != m_EntitySignatures.end() && "Signature not found");
+			return m_EntitySignatures.at(entity);
 		}
 
 		void UpdateEntityTargetSystems(const EntityID entity)
 		{
-			for (auto& system : registeredSystems)
+			for (auto& system : m_RegisteredSystems)
 			{
 				AddEntityToSystem(entity, system.second.get());
 			}
@@ -70,13 +69,13 @@ namespace ECS
 
 		void AddEntityToSystem(const EntityID entity, System* system)
 		{
-			if (BelongToSystem(entity, system->signature) && IsEntityActive(entity))
+			if (BelongToSystem(entity, system->m_Signature) && IsEntityActive(entity))
 			{
-				system->entities.insert(entity);
+				system->m_Entities.insert(entity);
 			}
 			else
 			{
-				system->entities.erase(entity);
+				system->m_Entities.erase(entity);
 			}
 		}
 
@@ -95,32 +94,32 @@ namespace ECS
 
 	public:
 		EntityManager()
-			: entityCount(0)
+			: m_EntityCount(0)
 		{
 			for (EntityID entity = 0u; entity < MAX_ENTITY_COUNT; entity++)
 			{
-				availableEntityIDs.push(entity);
+				m_AvailableEntityIDs.push(entity);
 			}
 		}
 
 		~EntityManager()
 		{
-			delete instance;
+			delete m_Instance;
 		}
 
 		inline static EntityManager& Get()
 		{
-			if (instance == nullptr)
+			if (m_Instance == nullptr)
 			{
-				instance = new EntityManager();
+				m_Instance = new EntityManager();
 			}
 
-			return *instance;
+			return *m_Instance;
 		}
 
 		void Update(GameState currentState)
 		{
-			for (auto& system : registeredSystems)
+			for (auto& system : m_RegisteredSystems)
 			{
 				system.second->Update(currentState);
 			}
@@ -128,7 +127,7 @@ namespace ECS
 
 		void Render(GameState currentState)
 		{
-			for (auto& system : registeredSystems)
+			for (auto& system : m_RegisteredSystems)
 			{
 				system.second->Render(currentState);
 			}
@@ -136,32 +135,32 @@ namespace ECS
 
 		const EntityID AddNewEntity()
 		{
-			const EntityID entityID = availableEntityIDs.front();
+			const EntityID entityID = m_AvailableEntityIDs.front();
 			AddEntitySignature(entityID);
 
 			AddComponent<Transform>(entityID);
 
-			availableEntityIDs.pop();
-			entityCount++;
+			m_AvailableEntityIDs.pop();
+			m_EntityCount++;
 
-			activeEntities[entityID] = true;
-			entityTags[entityID] = EntityTag::Untagged;
+			m_ActiveEntities[entityID] = true;
+			m_EntityTags[entityID] = EntityTag::Untagged;
 			
 			return entityID;
 		}
 
 		const EntityID AddNewEntity(float x, float y)
 		{
-			const EntityID entityID = availableEntityIDs.front();
+			const EntityID entityID = m_AvailableEntityIDs.front();
 			AddEntitySignature(entityID);
 
 			AddComponent<Transform>(entityID, x, y);
 
-			availableEntityIDs.pop();
-			entityCount++;
+			m_AvailableEntityIDs.pop();
+			m_EntityCount++;
 
-			activeEntities[entityID] = true;
-			entityTags[entityID] = EntityTag::Untagged;
+			m_ActiveEntities[entityID] = true;
+			m_EntityTags[entityID] = EntityTag::Untagged;
 
 			return entityID;
 		}
@@ -170,59 +169,59 @@ namespace ECS
 		{
 			AssertEntityNotOutOfRange(entity);
 
-			entitySignatures.erase(entity);
+			m_EntitySignatures.erase(entity);
 
-			for (auto& array : componentArrays)
+			for (auto& array : m_ComponentArrays)
 			{
 				array.second->Erase(entity);
 			}
 
-			for (auto& system : registeredSystems)
+			for (auto& system : m_RegisteredSystems)
 			{
 				system.second->RemoveEntity(entity);
 			}
 
-			activeEntities.erase(entity);
-			entityTags.erase(entity);
+			m_ActiveEntities.erase(entity);
+			m_EntityTags.erase(entity);
 
-			entityCount--;
-			availableEntityIDs.push(entity);
+			m_EntityCount--;
+			m_AvailableEntityIDs.push(entity);
 		}
 
 		void SetEntityActive(const EntityID entity, const bool active)
 		{
-			activeEntities[entity] = active;
+			m_ActiveEntities[entity] = active;
 			UpdateEntityTargetSystems(entity);
 		}
 
 		bool IsEntityActive(const EntityID entity)
 		{
-			return activeEntities[entity];
+			return m_ActiveEntities[entity];
 		}
 
 		void SetEntityTag(const EntityID entity, const EntityTag tag)
 		{
-			entityTags[entity] = tag;
+			m_EntityTags[entity] = tag;
 		}
 
 		EntityTag GetEntityTag(const EntityID entity)
 		{
-			return entityTags[entity];
+			return m_EntityTags[entity];
 		}
 
 		template<typename T, typename... Args>
 		void AddComponent(const EntityID entity, Args&&... args)
 		{
 			AssertEntityNotOutOfRange(entity);
-			assert(entitySignatures[entity]->size() < MAX_COMPONENT_COUNT && "Component count limit reached!");
+			assert(m_EntitySignatures[entity]->size() < MAX_COMPONENT_COUNT && "Component count limit reached!");
 
 			T component(std::forward<Args>(args)...);
-			component.entityID = entity;
+			component.m_EntityID = entity;
 			GetEntitySignature(entity)->insert(ComponentType<T>());
 			GetComponentList<T>()->Insert(component);
 
 			const ComponentTypeID componentType = ComponentType<T>();
-			entitySignatures.at(entity)->insert(componentType);
+			m_EntitySignatures.at(entity)->insert(componentType);
 			UpdateEntityTargetSystems(entity);
 		}
 
@@ -232,7 +231,7 @@ namespace ECS
 			AssertEntityNotOutOfRange(entity);
 
 			const ComponentTypeID componentType = ComponentType<T>();
-			entitySignatures.at(entity)->erase(componentType);
+			m_EntitySignatures.at(entity)->erase(componentType);
 			GetComponentList<T>()->Erase(entity);
 			UpdateEntityTargetSystems(entity);
 		}
@@ -251,12 +250,12 @@ namespace ECS
 		{
 			const ComponentTypeID componentType = ComponentType<T>();
 
-			if (componentArrays.count(componentType) == 0)
+			if (m_ComponentArrays.count(componentType) == 0)
 			{
 				AddComponentList<T>();
 			}
 
-			return std::static_pointer_cast<ComponentList<T>>(componentArrays.at(componentType));
+			return std::static_pointer_cast<ComponentList<T>>(m_ComponentArrays.at(componentType));
 		}
 
 		template<typename T>
@@ -276,33 +275,33 @@ namespace ECS
 		void RegisterSystem()
 		{
 			const SystemTypeID systemType = SystemType<T>();
-			assert(registeredSystems.count(systemType) == 0 && "System already registered");
+			assert(m_RegisteredSystems.count(systemType) == 0 && "System already registered");
 			auto system = std::make_shared<T>();
 
 			// Add entity to new system
-			for (EntityID entity = 0; entity < entityCount; entity++)
+			for (EntityID entity = 0; entity < m_EntityCount; entity++)
 			{
 				AddEntityToSystem(entity, system.get());
 			}
 
 			system->Start();
-			registeredSystems[systemType] = std::move(system);
+			m_RegisteredSystems[systemType] = std::move(system);
 		}
 
 		template<typename T>
 		std::shared_ptr<System> GetSystem()
 		{
 			const SystemTypeID systemType = SystemType<T>();
-			assert(registeredSystems.count(systemType) != 0 && "System not registered!");
-			return registeredSystems[systemType];
+			assert(m_RegisteredSystems.count(systemType) != 0 && "System not registered!");
+			return m_RegisteredSystems[systemType];
 		}
 
 		template<typename T>
 		void UnregisterSystem()
 		{
 			const SystemTypeID systemType = SystemType<T>();
-			assert(registeredSystems.count(systemType) != 0 && "System not registered!");
-			registeredSystems.erase(systemType);
+			assert(m_RegisteredSystems.count(systemType) != 0 && "System not registered!");
+			m_RegisteredSystems.erase(systemType);
 		}
 	};
 }

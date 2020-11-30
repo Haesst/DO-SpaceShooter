@@ -4,7 +4,7 @@
 
 #include "InputManager.h"
 
-ECS::EntityManager* ECS::EntityManager::instance = nullptr;
+ECS::EntityManager* ECS::EntityManager::m_Instance = nullptr;
 
 Engine::Engine()
 {
@@ -17,7 +17,7 @@ Engine::~Engine()
 
 void Engine::Quit()
 {
-	Running = false;
+	m_Running = false;
 	Clean();
 }
 
@@ -30,53 +30,53 @@ void Engine::Init()
 	}
 
 	auto windowFlags = (SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_ALLOW_HIGHDPI);
-	Window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, windowFlags);
+	m_Window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, windowFlags);
 
-	if (!Window)
+	if (!m_Window)
 	{
 		std::cerr << SDL_GetError() << std::endl;
 		return;
 	}
 
-	Renderer = SDL_CreateRenderer(Window, -1, (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+	m_Renderer = SDL_CreateRenderer(m_Window, -1, (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
 
-	if (!Renderer)
+	if (!m_Renderer)
 	{
 		std::cerr << SDL_GetError() << std::endl;
 		return;
 	}
 
-	entityManager = &ECS::EntityManager::Get();
-	inputManager.Init();
+	m_EntityManager = &ECS::EntityManager::Get();
+	m_InputManager.Init();
 
-	Running = true;
+	m_Running = true;
 }
 
 void Engine::Clean()
 {
-	SDL_DestroyRenderer(Renderer);
-	SDL_DestroyWindow(Window);
+	SDL_DestroyRenderer(m_Renderer);
+	SDL_DestroyWindow(m_Window);
 	SDL_Quit();
 }
 
 void Engine::Render(GameState currentState)
 {
-	if (SDL_GetWindowFlags(Window) & SDL_WINDOW_MINIMIZED)
+	if (SDL_GetWindowFlags(m_Window) & SDL_WINDOW_MINIMIZED)
 	{
 		return;
 	}
 
-	SDL_SetRenderDrawColor(Renderer, ClearColor.r, ClearColor.g, ClearColor.b, ClearColor.a);
-	SDL_RenderClear(Renderer);
+	SDL_SetRenderDrawColor(m_Renderer, m_ClearColor.r, m_ClearColor.g, m_ClearColor.b, m_ClearColor.a);
+	SDL_RenderClear(m_Renderer);
 
-	entityManager->Render(currentState);
+	m_EntityManager->Render(currentState);
 
-	SDL_RenderPresent(Renderer);
+	SDL_RenderPresent(m_Renderer);
 }
 
 void Engine::Update(GameState currentState)
 {
-	entityManager->Update(currentState);
+	m_EntityManager->Update(currentState);
 }
 
 void Engine::Event()
@@ -88,31 +88,31 @@ void Engine::Event()
 		switch (event.type)
 		{
 		case SDL_QUIT:
-			Running = false;
+			m_Running = false;
 			break;
 		}
 	}
 
-	inputManager.Update();
+	m_InputManager.Update();
 }
 
 SDL_Renderer* Engine::GetRenderer()
 {
-	return Renderer;
+	return m_Renderer;
 }
 
 SDL_Window* Engine::GetWindow()
 {
-	return Window;
+	return m_Window;
 }
 
 InputManager* Engine::GetInputManager()
 {
-	return &inputManager;
+	return &m_InputManager;
 }
 
 AssetManager* Engine::GetAssetManager()
 {
-	return &assetManager;
+	return &m_AssetManager;
 }
 

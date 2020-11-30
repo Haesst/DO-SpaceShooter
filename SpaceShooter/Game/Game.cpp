@@ -10,22 +10,17 @@
 #include "Components/BoxCollider2D.h"
 #include "Components/Bullet.h"
 
-// Todo: Create a better collisionsystem <- not in every update but in a standalone physics system
-// Todo: Try to fix so entitypools can expand (need to create prefabs)
-// Todo: Clean code
-
 const int FRAMERATE = 120;
 const int MILLISECONDTOSECOND = 1000;
 
 void Game::Init(Engine* engine)
 {
-	// Init gamestate
-	gameState.engine = engine;
-	gameState.renderer = engine->GetRenderer();
-	gameState.window = engine->GetWindow();
+	m_GameState.m_Engine = engine;
+	m_GameState.m_Renderer = engine->GetRenderer();
+	m_GameState.m_Window = engine->GetWindow();
 
-	assetManager = engine->GetAssetManager();
-	entityManager = &ECS::EntityManager::Get();
+	m_AssetManager = engine->GetAssetManager();
+	m_EntityManager = &ECS::EntityManager::Get();
 
 	LoadAssets();
 	RegisterSystems();
@@ -34,28 +29,28 @@ void Game::Init(Engine* engine)
 
 void Game::Quit()
 {
-	delete smallEnemyPool;
-	delete smallEnemyBulletPool;
-	delete playerBulletPool;
+	delete m_SmallEnemyPool;
+	delete m_SmallEnemyBulletPool;
+	delete m_PlayerBulletPool;
 }
 
 void Game::LoadAssets()
 {
-	assetManager->Init(gameState.engine);
-	assetManager->LoadTexture(playerTextureID, playerTexturePath);
-	assetManager->LoadTexture(smallEnemyTextureID, smallEnemyTexturePath);
-	assetManager->LoadTexture(enemyBulletTextureID, enemyBulletTexturePath);
-	assetManager->LoadTexture(playerBulletTextureID, playerBulletTexturePath);
+	m_AssetManager->Init(m_GameState.m_Engine);
+	m_AssetManager->LoadTexture(m_PlayerTextureID, m_PlayerTexturePath);
+	m_AssetManager->LoadTexture(m_SmallEnemyTextureID, m_SmallEnemyTexturePath);
+	m_AssetManager->LoadTexture(m_EnemyBulletTextureID, m_EnemyBulletTexturePath);
+	m_AssetManager->LoadTexture(m_PlayerBulletTextureID, m_PlayerBulletTexturePath);
 }
 
 void Game::RegisterSystems()
 {
-	entityManager->RegisterSystem<ECS::SpriteRenderSystem>();
-	entityManager->RegisterSystem<PlayerSystem>();
-	entityManager->RegisterSystem<SmallEnemySystem>();
-	entityManager->RegisterSystem<BulletSystem>();
-	entityManager->RegisterSystem<BulletCollisionSystem>();
-	entityManager->RegisterSystem<SmallEnemyWaveSystem>();
+	m_EntityManager->RegisterSystem<ECS::SpriteRenderSystem>();
+	m_EntityManager->RegisterSystem<PlayerSystem>();
+	m_EntityManager->RegisterSystem<SmallEnemySystem>();
+	m_EntityManager->RegisterSystem<BulletSystem>();
+	m_EntityManager->RegisterSystem<BulletCollisionSystem>();
+	m_EntityManager->RegisterSystem<SmallEnemyWaveSystem>();
 }
 
 void Game::CreateEntities()
@@ -68,15 +63,15 @@ void Game::CreateEntities()
 
 void Game::CreateBulletPools()
 {
-	CreateBulletPool(300, 1, ECS::EntityTag::PlayerBullet, playerBulletPool, playerBulletTextureID, playerBulletVelocity);
-	CreateBulletPool(300, 1, ECS::EntityTag::EnemyBullet, smallEnemyBulletPool, enemyBulletTextureID, enemyBulletVelocity);
+	CreateBulletPool(300, 1, ECS::EntityTag::PlayerBullet, m_PlayerBulletPool, m_PlayerBulletTextureID, m_PlayerBulletVelocity);
+	CreateBulletPool(300, 1, ECS::EntityTag::EnemyBullet, m_SmallEnemyBulletPool, m_EnemyBulletTextureID, m_EnemyBulletVelocity);
 }
 
 void Game::CreateBulletPool(int initAmount, int expandBy, ECS::EntityTag tag, EntityPool*& pool, std::string textureID, Vector2D initVelocity)
 {
 	pool = new EntityPool(initAmount, expandBy);
-	SDL_Texture* bulletTexture = assetManager->GetTexture(textureID);
-	pool->AddComponentToPool<ECS::SpriteRenderer>(gameState.engine->GetRenderer(), bulletTexture);
+	SDL_Texture* bulletTexture = m_AssetManager->GetTexture(textureID);
+	pool->AddComponentToPool<ECS::SpriteRenderer>(m_GameState.m_Engine->GetRenderer(), bulletTexture);
 	int bulletColliderWidth = 0;
 	int bulletColliderHeight = 0;
 	SDL_QueryTexture(bulletTexture, nullptr, nullptr, &bulletColliderWidth, &bulletColliderHeight);
@@ -87,48 +82,48 @@ void Game::CreateBulletPool(int initAmount, int expandBy, ECS::EntityTag tag, En
 
 void Game::CreatePlayer()
 {
-	ECS::EntityID id = entityManager->AddNewEntity(playerStartPosition.x, playerStartPosition.y);
-	entityManager->AddComponent<Player>(id);
-	SDL_Texture* playerTexture = assetManager->GetTexture(playerTextureID);
-	entityManager->AddComponent<ECS::SpriteRenderer>(id, gameState.engine->GetRenderer(), playerTexture);
+	ECS::EntityID id = m_EntityManager->AddNewEntity(m_PlayerStartPosition.x, m_PlayerStartPosition.y);
+	m_EntityManager->AddComponent<Player>(id);
+	SDL_Texture* playerTexture = m_AssetManager->GetTexture(m_PlayerTextureID);
+	m_EntityManager->AddComponent<ECS::SpriteRenderer>(id, m_GameState.m_Engine->GetRenderer(), playerTexture);
 	int playerColliderWidth = 0;
 	int playerColliderHeight = 0;
 	SDL_QueryTexture(playerTexture, nullptr, nullptr, &playerColliderWidth, &playerColliderHeight);
-	entityManager->AddComponent<BoxCollider2D>(id, playerColliderWidth, playerColliderHeight);
-	entityManager->SetEntityActive(id, true);
-	entityManager->SetEntityTag(id, ECS::EntityTag::Player);
-	entityManager->GetComponent<Player>(id).bulletPool = playerBulletPool;
+	m_EntityManager->AddComponent<BoxCollider2D>(id, playerColliderWidth, playerColliderHeight);
+	m_EntityManager->SetEntityActive(id, true);
+	m_EntityManager->SetEntityTag(id, ECS::EntityTag::Player);
+	m_EntityManager->GetComponent<Player>(id).m_BulletPool = m_PlayerBulletPool;
 }
 
 void Game::CreateEnemyPool(int initAmount, int expandBy)
 {
-	smallEnemyPool = new EntityPool(60, 1);
-	SDL_Texture* enemyTexture = assetManager->GetTexture(smallEnemyTextureID);
-	smallEnemyPool->AddComponentToPool<ECS::SpriteRenderer>(gameState.engine->GetRenderer(), enemyTexture);
+	m_SmallEnemyPool = new EntityPool(60, 1);
+	SDL_Texture* enemyTexture = m_AssetManager->GetTexture(m_SmallEnemyTextureID);
+	m_SmallEnemyPool->AddComponentToPool<ECS::SpriteRenderer>(m_GameState.m_Engine->GetRenderer(), enemyTexture);
 	int enemyColliderWidth = 0;
 	int enemyColliderHeight = 0;
 	SDL_QueryTexture(enemyTexture, nullptr, nullptr, &enemyColliderWidth, &enemyColliderHeight);
-	smallEnemyPool->AddComponentToPool<BoxCollider2D>(enemyColliderWidth, enemyColliderHeight);
-	smallEnemyPool->AddComponentToPool<SmallEnemy>(smallEnemyBulletPool, smallEnemyPool);
-	smallEnemyPool->SetPoolEntitiesTag(ECS::EntityTag::Enemy);
+	m_SmallEnemyPool->AddComponentToPool<BoxCollider2D>(enemyColliderWidth, enemyColliderHeight);
+	m_SmallEnemyPool->AddComponentToPool<SmallEnemy>(m_SmallEnemyBulletPool, m_SmallEnemyPool);
+	m_SmallEnemyPool->SetPoolEntitiesTag(ECS::EntityTag::Enemy);
 }
 
 void Game::CreateEnemyWaves()
 {
 	ECS::EntityID enemyWaveID = ECS::EntityManager::Get().AddNewEntity();
-	entityManager->AddComponent<SmallEnemyWave>(enemyWaveID, smallEnemyPool);
+	m_EntityManager->AddComponent<SmallEnemyWave>(enemyWaveID, m_SmallEnemyPool);
 	SmallEnemyWave* enemyWave = &ECS::EntityManager::Get().GetComponent<SmallEnemyWave>(enemyWaveID);
 
-	enemyWave->waves.push(3);
-	enemyWave->waves.push(6);
-	enemyWave->waves.push(8);
-	enemyWave->waves.push(14);
-	enemyWave->waves.push(18);
+	enemyWave->m_Waves.push(3);
+	enemyWave->m_Waves.push(6);
+	enemyWave->m_Waves.push(8);
+	enemyWave->m_Waves.push(14);
+	enemyWave->m_Waves.push(18);
 }
 
 void Game::HandleCollisions()
 {
-	ECS::System* bulletCollisionSystem = entityManager->GetSystem<BulletCollisionSystem>().get();
+	ECS::System* bulletCollisionSystem = m_EntityManager->GetSystem<BulletCollisionSystem>().get();
 
 	std::set<ECS::EntityID> entities;
 	std::vector<ECS::EntityID> killList;
@@ -141,7 +136,7 @@ void Game::HandleCollisions()
 
 	for (ECS::EntityID entity : entities)
 	{
-		ECS::EntityTag entityTag = entityManager->GetEntityTag(entity);
+		ECS::EntityTag entityTag = m_EntityManager->GetEntityTag(entity);
 
 		if (entityTag == ECS::EntityTag::EnemyBullet || entityTag == ECS::EntityTag::PlayerBullet)
 		{
@@ -155,15 +150,15 @@ void Game::HandleCollisions()
 				continue;
 			}
 
-			ECS::EntityTag otherTag = entityManager->GetEntityTag(otherEntity);
+			ECS::EntityTag otherTag = m_EntityManager->GetEntityTag(otherEntity);
 
 			if ((entityTag == ECS::EntityTag::Player && otherTag == ECS::EntityTag::EnemyBullet) ||
 				(entityTag == ECS::EntityTag::Enemy && otherTag == ECS::EntityTag::PlayerBullet))
 			{
-				BoxCollider2D collider = entityManager->GetComponent<BoxCollider2D>(entity);
-				BoxCollider2D otherCollider = entityManager->GetComponent<BoxCollider2D>(otherEntity);
+				BoxCollider2D collider = m_EntityManager->GetComponent<BoxCollider2D>(entity);
+				BoxCollider2D otherCollider = m_EntityManager->GetComponent<BoxCollider2D>(otherEntity);
 
-				if (AABB(collider.Box, otherCollider.Box))
+				if (AABB(collider.m_Box, otherCollider.m_Box))
 				{
 					Collide(entity, otherEntity, &killList);
 				}
@@ -173,7 +168,7 @@ void Game::HandleCollisions()
 
 	for (ECS::EntityID entity : killList)
 	{
-		entityManager->SetEntityActive(entity, false);
+		m_EntityManager->SetEntityActive(entity, false);
 	}
 }
 
@@ -185,8 +180,8 @@ bool Game::AABB(const SDL_Rect& rectA, const SDL_Rect& rectB) const
 
 void Game::Collide(const ECS::EntityID entity, const ECS::EntityID otherEntity, std::vector<ECS::EntityID>* killList)
 {
-	ECS::EntityTag entityTag = entityManager->GetEntityTag(entity);
-	ECS::EntityTag otherTag = entityManager->GetEntityTag(otherEntity);
+	ECS::EntityTag entityTag = m_EntityManager->GetEntityTag(entity);
+	ECS::EntityTag otherTag = m_EntityManager->GetEntityTag(otherEntity);
 
 	if (entityTag == ECS::EntityTag::Player)
 	{
@@ -194,7 +189,7 @@ void Game::Collide(const ECS::EntityID entity, const ECS::EntityID otherEntity, 
 		{
 			killList->push_back(otherEntity);
 
-			Player* player = &entityManager->GetComponent<Player>(entity);
+			Player* player = &m_EntityManager->GetComponent<Player>(entity);
 			player->HitPlayer();
 
 			if (!player->PlayerAlive())
@@ -220,17 +215,17 @@ void Game::Run()
 	Uint64 lastFrameCounter = 0;
 	int msByFrameRate = MILLISECONDTOSECOND / FRAMERATE;
 
-	while (gameState.engine->IsRunning())
+	while (m_GameState.m_Engine->IsRunning())
 	{
 		lastFrameCounter = currentFrameCounter;
 		currentFrameCounter =  SDL_GetPerformanceCounter();
 
-		gameState.deltaTime = (float)(currentFrameCounter - lastFrameCounter) / (float)SDL_GetPerformanceFrequency();
+		m_GameState.m_DeltaTime = (float)(currentFrameCounter - lastFrameCounter) / (float)SDL_GetPerformanceFrequency();
 
 		timerFPS = SDL_GetTicks();
 
-		gameState.engine->Event();
-		gameState.engine->Update(gameState);
+		m_GameState.m_Engine->Event();
+		m_GameState.m_Engine->Update(m_GameState);
 		HandleCollisions();
 
 		timerFPS = SDL_GetTicks() - timerFPS;
@@ -240,6 +235,6 @@ void Game::Run()
 			SDL_Delay((msByFrameRate) - timerFPS);
 		}
 
-		gameState.engine->Render(gameState);
+		m_GameState.m_Engine->Render(m_GameState);
 	}
 }

@@ -15,13 +15,13 @@ constexpr SDL_Color DARK = { 30, 30, 30, 255 };
 class Engine
 {
 private:
-	bool Running;
-	SDL_Window* Window;
-	SDL_Color ClearColor;
-	SDL_Renderer* Renderer;
-	ECS::EntityManager* entityManager;
-	InputManager inputManager;
-	AssetManager assetManager;
+	bool m_Running;
+	SDL_Window* m_Window;
+	SDL_Color m_ClearColor;
+	SDL_Renderer* m_Renderer;
+	ECS::EntityManager* m_EntityManager;
+	InputManager m_InputManager;
+	AssetManager m_AssetManager;
 
 public:
 	Engine();
@@ -42,6 +42,6 @@ public:
 
 	inline bool IsRunning()
 	{
-		return Running;
+		return m_Running;
 	}
 };

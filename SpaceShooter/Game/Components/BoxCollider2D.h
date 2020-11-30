@@ -6,12 +6,12 @@
 
 struct BoxCollider2D : public ECS::Component
 {
-	SDL_Rect Box{ 0,0,0,0 };
+	SDL_Rect m_Box{ 0,0,0,0 };
 	
-	float baseWidth;
-	float baseHeight;
+	float m_BaseWidth;
+	float m_BaseHeight;
 
 	BoxCollider2D(int baseWidth, int baseHeight)
-		: baseWidth(baseWidth), baseHeight(baseHeight)
+		: m_BaseWidth(baseWidth), m_BaseHeight(baseHeight)
 	{}
 };

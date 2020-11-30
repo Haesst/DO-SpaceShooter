@@ -5,31 +5,31 @@
 
 struct Player : public ECS::Component
 {
-	int health = 3;
-	float speed = 4.0f;
+	int m_Health = 3;
+	float m_Speed = 4.0f;
 
-	Vector2D bulletOffset = { 0.0f, -50.0f };
-	float timeBetweenBullets = 1.8f;
-	float currentTimeBetweenBullets = 0.0f;
-	float bulletSpeed = 10.0f;
+	Vector2D m_BulletOffset = { 0.0f, -50.0f };
+	float m_TimeBetweenBullets = 1.8f;
+	float m_CurrentTimeBetweenBullets = 0.0f;
+	float m_BulletSpeed = 10.0f;
 
-	EntityPool* bulletPool;
+	EntityPool* m_BulletPool;
 
 	void SetPosition(float x, float y)
 	{
-		ECS::Transform* transform = &ECS::EntityManager::Get().GetComponent<ECS::Transform>(entityID);
+		ECS::Transform* transform = &ECS::EntityManager::Get().GetComponent<ECS::Transform>(m_EntityID);
 
-		transform->Position.x = x;
-		transform->Position.y = y;
+		transform->m_Position.x = x;
+		transform->m_Position.y = y;
 	}
 
 	void HitPlayer()
 	{
-		health--;
+		m_Health--;
 	}
 
 	bool PlayerAlive()
 	{
-		return health > 0;
+		return m_Health > 0;
 	}
 };

@@ -11,20 +11,20 @@
 class EntityPool
 {
 private:
-	int entityCount;
-	std::deque<ECS::EntityID> unusedEntities;
-	std::vector<ECS::EntityID> allEntitites;
-	unsigned int expandBy;
+	int m_EntityCount;
+	std::deque<ECS::EntityID> m_UnusedEntities;
+	std::vector<ECS::EntityID> m_AllEntitites;
+	unsigned int m_ExpandBy;
 
 public:
 	EntityPool(unsigned int initSize, unsigned int expandBy = 1)
-		: entityCount(0u), expandBy(expandBy)
+		: m_EntityCount(0u), m_ExpandBy(expandBy)
 	{
 		for (int i = 0; i < initSize; i++)
 		{
 			ECS::EntityID entity = ECS::EntityManager::Get().AddNewEntity();
-			unusedEntities.push_back(entity);
-			allEntitites.push_back(entity);
+			m_UnusedEntities.push_back(entity);
+			m_AllEntitites.push_back(entity);
 			ECS::EntityManager::Get().SetEntityActive(entity, false);
 		}
 	}
@@ -32,7 +32,7 @@ public:
 	template<typename T, typename... Args>
 	void AddComponentToPool(Args&&... args)
 	{
-		for (auto entity : unusedEntities)
+		for (auto entity : m_UnusedEntities)
 		{
 			ECS::EntityManager::Get().AddComponent<T>(entity, std::forward<Args>(args)...);
 		}
@@ -41,7 +41,7 @@ public:
 	template<typename T, typename... Args>
 	void RemoveComponentFromPool(Args&&... args)
 	{
-		for (auto entity : unusedEntities)
+		for (auto entity : m_UnusedEntities)
 		{
 			ECS::EntityManager::Get().RemoveComponent<T>(entity, std::forward<Args>(args)...);
 		}
@@ -49,7 +49,7 @@ public:
 
 	void SetPoolEntitiesTag(ECS::EntityTag tag)
 	{
-		for (auto entity : unusedEntities)
+		for (auto entity : m_UnusedEntities)
 		{
 			ECS::EntityManager::Get().SetEntityTag(entity, tag);
 		}
@@ -57,13 +57,13 @@ public:
 
 	ECS::EntityID Rent(bool returnActive = true)
 	{
-		if (unusedEntities.size() <= 0)
+		if (m_UnusedEntities.size() <= 0)
 		{
 			std::cerr << "Entity pool to small." << std::endl; // very bad way to quickly skip doing an expand for now
 		}
 
-		ECS::EntityID entity = unusedEntities.front();
-		unusedEntities.pop_front();
+		ECS::EntityID entity = m_UnusedEntities.front();
+		m_UnusedEntities.pop_front();
 
 		ECS::EntityManager::Get().SetEntityActive(entity, returnActive);
 		return entity;
@@ -71,6 +71,6 @@ public:
 
 	void Unrent(ECS::EntityID entity)
 	{
-		unusedEntities.push_back(entity);
+		m_UnusedEntities.push_back(entity);
 	}
 };

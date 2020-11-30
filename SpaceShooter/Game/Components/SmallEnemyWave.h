@@ -5,20 +5,20 @@
 
 struct SmallEnemyWave : public ECS::Component
 {
-	EntityPool* smallEnemyPool;
+	EntityPool* m_SmallEnemyPool;
 
-	bool spawningWave = false;
-	int spawnedThisWave = 0;
+	bool m_SpawningWave = false;
+	int m_SpawnedThisWave = 0;
 
-	float timeBetweenSpawns = 0.7f;
-	float currentTimeBetweenSpawn = 0.0f;
+	float m_TimeBetweenSpawns = 0.7f;
+	float m_CurrentTimeBetweenSpawn = 0.0f;
 
-	float timeBetweenWaves = 1.5f;
-	float currentTimeBetweenWaves = 1.5f;
+	float m_TimeBetweenWaves = 1.5f;
+	float m_CurrentTimeBetweenWaves = 1.5f;
 
-	std::vector<ECS::EntityID> currentWave;
-	std::queue<int> waves;
+	std::vector<ECS::EntityID> m_CurrentWave;
+	std::queue<int> m_Waves;
 
-	SmallEnemyWave(EntityPool* enemyPool) : smallEnemyPool(enemyPool) {}
+	SmallEnemyWave(EntityPool* enemyPool) : m_SmallEnemyPool(enemyPool) {}
 	~SmallEnemyWave() = default;
 };

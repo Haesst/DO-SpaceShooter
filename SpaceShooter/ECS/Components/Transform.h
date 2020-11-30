@@ -7,27 +7,27 @@ namespace ECS
 {
 	struct Transform : public Component
 	{
-		Vector2D Position = Vector2D().Zero();
-		Vector2D Scale = Vector2D().One();
-		float Rotation = 0.0f;
+		Vector2D m_Position = Vector2D().Zero();
+		Vector2D m_Scale = Vector2D().One();
+		float m_Rotation = 0.0f;
 
 		Transform() = default;
 
 		Transform(float x, float y)
-			: Position(Vector2D(x, y)), Scale(Vector2D().One())
+			: m_Position(Vector2D(x, y)), m_Scale(Vector2D().One())
 		{}
 
 		Transform(float x, float y, float scaleX, float scaleY)
-			: Position(Vector2D(x, y)), Scale(Vector2D(scaleX, scaleY))
+			: m_Position(Vector2D(x, y)), m_Scale(Vector2D(scaleX, scaleY))
 		{}
 
 		Transform(float x, float y, float scaleX, float scaleY, float rotation)
-			: Position(Vector2D(x, y)), Scale(Vector2D(scaleX, scaleY)), Rotation(rotation)
+			: m_Position(Vector2D(x, y)), m_Scale(Vector2D(scaleX, scaleY)), m_Rotation(rotation)
 		{}
 
 		void Translate(Vector2D v)
 		{
-			Position += v;
+			m_Position += v;
 		}
 
 		virtual ~Transform() = default;

@@ -10,26 +10,26 @@
 
 struct BulletCollisionSystem : ECS::System
 {
-	ECS::EntityManager* entityManager;
+	ECS::EntityManager* m_EntityManager;
 
 	BulletCollisionSystem()
 	{
 		AddComponentSignature<BoxCollider2D>();
-		entityManager = &ECS::EntityManager::Get();
+		m_EntityManager = &ECS::EntityManager::Get();
 	}
 
 	virtual void Update(GameState currentState) override
 	{
-		for (auto entity : entities)
+		for (auto entity : m_Entities)
 		{
-			ECS::Transform* transform = &entityManager->GetComponent<ECS::Transform>(entity);
-			BoxCollider2D* collider = &entityManager->GetComponent<BoxCollider2D>(entity);
-			ECS::EntityTag entityTag = entityManager->GetEntityTag(entity);
+			ECS::Transform* transform = &m_EntityManager->GetComponent<ECS::Transform>(entity);
+			BoxCollider2D* collider = &m_EntityManager->GetComponent<BoxCollider2D>(entity);
+			ECS::EntityTag entityTag = m_EntityManager->GetEntityTag(entity);
 
-			collider->Box.x = transform->Position.x;
-			collider->Box.y = transform->Position.y;
-			collider->Box.w = collider->baseWidth * transform->Scale.x;
-			collider->Box.h = collider->baseHeight * transform->Scale.y;
+			collider->m_Box.x = transform->m_Position.x;
+			collider->m_Box.y = transform->m_Position.y;
+			collider->m_Box.w = collider->m_BaseWidth * transform->m_Scale.x;
+			collider->m_Box.h = collider->m_BaseHeight * transform->m_Scale.y;
 		}
 	}
 };

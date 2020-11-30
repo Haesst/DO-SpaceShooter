@@ -19,46 +19,46 @@ AssetManager::AssetManager()
 
 void AssetManager::Init(Engine* engine)
 {
-	this->engine = engine;
+	this->m_Engine = engine;
 }
 
 void AssetManager::Clean()
 {
-	auto textureIt = textures.begin();
-	while (textureIt != textures.end())
+	auto textureIt = m_Textures.begin();
+	while (textureIt != m_Textures.end())
 	{
 		SDL_DestroyTexture(textureIt->second);
-		textureIt = textures.erase(textureIt);
+		textureIt = m_Textures.erase(textureIt);
 	}
 
-	textures.clear();
+	m_Textures.clear();
 
-	auto fontIt = fonts.begin();
-	while (fontIt != fonts.end())
+	auto fontIt = m_Fonts.begin();
+	while (fontIt != m_Fonts.end())
 	{
 		TTF_CloseFont(fontIt->second);
-		fontIt = fonts.erase(fontIt);
+		fontIt = m_Fonts.erase(fontIt);
 	}
 
-	fonts.clear();
+	m_Fonts.clear();
 
 	std::cout << "Assets cleared" << std::endl;
 }
 
 SDL_Texture* AssetManager::GetTexture(std::string id)
 {
-	return (textures.count(id) > 0) ? textures[id] : nullptr;
+	return (m_Textures.count(id) > 0) ? m_Textures[id] : nullptr;
 }
 
 void AssetManager::LoadTexture(std::string id, std::string path)
 {
-	if (textures.count(id) <= 0)
+	if (m_Textures.count(id) <= 0)
 	{
-		SDL_Texture* texture = IMG_LoadTexture(engine->GetRenderer(), path.c_str());
+		SDL_Texture* texture = IMG_LoadTexture(m_Engine->GetRenderer(), path.c_str());
 
 		if (texture != nullptr)
 		{
-			textures[id] = texture;
+			m_Textures[id] = texture;
 			std::cout << "Texture: [" << path << "] loaded!" << std::endl;
 		}
 		else
@@ -70,7 +70,7 @@ void AssetManager::LoadTexture(std::string id, std::string path)
 
 TTF_Font* AssetManager::GetFont(std::string id)
 {
-	return (fonts.count(id) > 0) ? fonts[id] : nullptr;
+	return (m_Fonts.count(id) > 0) ? m_Fonts[id] : nullptr;
 }
 
 void AssetManager::LoadFont(std::string id, std::string path, int fontSize)
@@ -79,7 +79,7 @@ void AssetManager::LoadFont(std::string id, std::string path, int fontSize)
 
 	if (newFont != nullptr)
 	{
-		fonts.emplace(id, newFont);
+		m_Fonts.emplace(id, newFont);
 		std::cout << "Font: [" << path << "] loaded!" << std::endl;
 	}
 	else

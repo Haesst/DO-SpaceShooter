@@ -18,7 +18,7 @@ namespace ECS
 	class ComponentList : public IComponentList
 	{
 	public:
-		std::vector<T> data; // Todo: Add this to document -> Maybe change to an actual array in order to not allocate memory on the heap?
+		std::vector<T> m_Data;
 
 	public:
 		ComponentList() = default;
@@ -28,7 +28,7 @@ namespace ECS
 		{
 			bool idExists = false;
 
-			for (auto c : data)
+			for (auto c : m_Data)
 			{
 				if (c.GetID() == component.GetID())
 				{
@@ -38,24 +38,24 @@ namespace ECS
 
 			if (!idExists)
 			{
-				data.push_back(component);
+				m_Data.push_back(component);
 			}
 		}
 
 		T& Get(const EntityID entity)
 		{
-			auto comp = std::find_if(data.begin(), data.end(), [&](const T& c) { return c.GetID() == entity; });
-			assert(comp != data.end() && "Trying to get non-existing component!");
+			auto comp = std::find_if(m_Data.begin(), m_Data.end(), [&](const T& c) { return c.GetID() == entity; });
+			assert(comp != m_Data.end() && "Trying to get non-existing component!");
 			return *comp;
 		}
 
 		void Erase(const EntityID entity) override final
 		{
-			auto comp = std::find_if(data.begin(), data.end(), [&](const T& c) { return c.GetID() == entity; });
+			auto comp = std::find_if(m_Data.begin(), m_Data.end(), [&](const T& c) { return c.GetID() == entity; });
 
-			if (comp != data.end())
+			if (comp != m_Data.end())
 			{
-				data.erase(comp);
+				m_Data.erase(comp);
 			}
 		}
 	};

@@ -9,28 +9,28 @@ class EntityManager;
 class Game
 {
 private:
-	EntityPool* smallEnemyPool;
-	EntityPool* smallEnemyBulletPool;
-	EntityPool* playerBulletPool;
+	EntityPool* m_SmallEnemyPool;
+	EntityPool* m_SmallEnemyBulletPool;
+	EntityPool* m_PlayerBulletPool;
 
-	GameState gameState;
+	GameState m_GameState;
 
-	AssetManager* assetManager;
-	ECS::EntityManager* entityManager;
+	AssetManager* m_AssetManager;
+	ECS::EntityManager* m_EntityManager;
 
-	std::string playerBulletTextureID = "PlayerBullet";
-	std::string enemyBulletTextureID = "EnemyBullet";
-	std::string playerTextureID = "PlayerShip";
-	std::string smallEnemyTextureID = "SmallEnemy";
+	std::string m_PlayerBulletTextureID = "PlayerBullet";
+	std::string m_EnemyBulletTextureID = "EnemyBullet";
+	std::string m_PlayerTextureID = "PlayerShip";
+	std::string m_SmallEnemyTextureID = "SmallEnemy";
 
-	std::string playerBulletTexturePath = "Sprites/PlayerBullet.png";
-	std::string enemyBulletTexturePath = "Sprites/SmallEnemyBullet.png";
-	std::string playerTexturePath = "Sprites/PlayerShip.png";
-	std::string smallEnemyTexturePath = "Sprites/SmallEnemy.png";
+	std::string m_PlayerBulletTexturePath = "Sprites/PlayerBullet.png";
+	std::string m_EnemyBulletTexturePath = "Sprites/SmallEnemyBullet.png";
+	std::string m_PlayerTexturePath = "Sprites/PlayerShip.png";
+	std::string m_SmallEnemyTexturePath = "Sprites/SmallEnemy.png";
 
-	Vector2D playerBulletVelocity = { 0.0f, -1.0f };
-	Vector2D enemyBulletVelocity = { 0.0f, 1.0f };
-	Vector2D playerStartPosition = { 600.0f, 600.0f };
+	Vector2D m_PlayerBulletVelocity = { 0.0f, -1.0f };
+	Vector2D m_EnemyBulletVelocity = { 0.0f, 1.0f };
+	Vector2D m_PlayerStartPosition = { 600.0f, 600.0f };
 
 private:
 	void LoadAssets();

@@ -7,12 +7,12 @@
 
 struct BulletSystem : ECS::System
 {
-	ECS::EntityManager* entityManager;
+	ECS::EntityManager* m_EntityManager;
 
 	BulletSystem()
 	{
 		AddComponentSignature<Bullet>();
-		entityManager = &ECS::EntityManager::Get();
+		m_EntityManager = &ECS::EntityManager::Get();
 	}
 
 	virtual void Update(GameState currentState) override
@@ -22,29 +22,29 @@ struct BulletSystem : ECS::System
 		int currentWindowWidth = 0;
 		int currentWindowHeight = 0;
 
-		SDL_GetWindowSize(currentState.window, &currentWindowWidth, &currentWindowHeight);
+		SDL_GetWindowSize(currentState.m_Window, &currentWindowWidth, &currentWindowHeight);
 
 		int minimumY = 0;
 
-		for (auto entity : entities)
+		for (auto entity : m_Entities)
 		{
-			ECS::Transform* transform = &entityManager->GetComponent<ECS::Transform>(entity);
-			Bullet* bullet = &entityManager->GetComponent<Bullet>(entity);
+			ECS::Transform* transform = &m_EntityManager->GetComponent<ECS::Transform>(entity);
+			Bullet* bullet = &m_EntityManager->GetComponent<Bullet>(entity);
 
-			float yPosition = transform->Position.y;
+			float yPosition = transform->m_Position.y;
 
 			if ((yPosition < minimumY) || (yPosition > currentWindowHeight))
 			{
-				bullet->owningPool->Unrent(entity);
+				bullet->m_OwningPool->Unrent(entity);
 				killList.push_back(entity);
 			}
 
-			transform->Translate(bullet->velocity * bullet->speed);
+			transform->Translate(bullet->m_Velocity * bullet->m_Speed);
 		}
 
 		for (auto entity : killList)
 		{
-			entityManager->SetEntityActive(entity, false);
+			m_EntityManager->SetEntityActive(entity, false);
 		}
 	}
 };

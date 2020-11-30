@@ -8,11 +8,11 @@ namespace ECS
 	{
 	protected:
 		friend class EntityManager;
-		EntityID entityID;
+		EntityID m_EntityID;
 
 	public:
-		Component() : entityID() {}
+		Component() : m_EntityID() {}
 		virtual ~Component() {}
-		inline const EntityID GetID() const { return entityID; }
+		inline const EntityID GetID() const { return m_EntityID; }
 	};
 }

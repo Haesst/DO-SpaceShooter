@@ -10,44 +10,44 @@ namespace ECS
 {
 	struct SpriteRenderSystem : public System
 	{
-		EntityManager* entityManager;
+		EntityManager* m_EntityManager;
 
 		SpriteRenderSystem()
 		{
 			AddComponentSignature<Transform>();
 			AddComponentSignature<SpriteRenderer>();
 
-			entityManager = &EntityManager::Get();
+			m_EntityManager = &EntityManager::Get();
 		}
 
 		virtual void Update(GameState currentState) override
 		{
-			for (auto entity : entities)
+			for (auto entity : m_Entities)
 			{
-				Transform* transform = &entityManager->GetComponent<Transform>(entity);
-				SpriteRenderer* spriteRenderer = &entityManager->GetComponent<SpriteRenderer>(entity);
+				Transform* transform = &m_EntityManager->GetComponent<Transform>(entity);
+				SpriteRenderer* spriteRenderer = &m_EntityManager->GetComponent<SpriteRenderer>(entity);
 
-				spriteRenderer->destRect.x = static_cast<int>(transform->Position.x);
-				spriteRenderer->destRect.y = static_cast<int>(transform->Position.y);
-				spriteRenderer->destRect.w = static_cast<int>(spriteRenderer->width * transform->Scale.x);
-				spriteRenderer->destRect.h = static_cast<int>(spriteRenderer->height * transform->Scale.y);
+				spriteRenderer->m_DestRect.x = static_cast<int>(transform->m_Position.x);
+				spriteRenderer->m_DestRect.y = static_cast<int>(transform->m_Position.y);
+				spriteRenderer->m_DestRect.w = static_cast<int>(spriteRenderer->m_Width * transform->m_Scale.x);
+				spriteRenderer->m_DestRect.h = static_cast<int>(spriteRenderer->m_Height * transform->m_Scale.y);
 			}
 		}
 
 		virtual void Render(GameState currentState) override
 		{
-			for (auto entity : entities)
+			for (auto entity : m_Entities)
 			{
 				if (EntityManager::Get().IsEntityActive(entity))
 				{
-					Transform* transform = &entityManager->GetComponent<Transform>(entity);
-					SpriteRenderer* spriteRenderer = &entityManager->GetComponent<SpriteRenderer>(entity);
+					Transform* transform = &m_EntityManager->GetComponent<Transform>(entity);
+					SpriteRenderer* spriteRenderer = &m_EntityManager->GetComponent<SpriteRenderer>(entity);
 					SDL_RenderCopyEx(
-						spriteRenderer->targetRenderer,
-						spriteRenderer->texture,
-						&spriteRenderer->sourceRect,
-						&spriteRenderer->destRect,
-						transform->Rotation,
+						spriteRenderer->m_TargetRenderer,
+						spriteRenderer->m_Texture,
+						&spriteRenderer->m_SourceRect,
+						&spriteRenderer->m_DestRect,
+						transform->m_Rotation,
 						nullptr,
 						SDL_FLIP_NONE);
 				}
